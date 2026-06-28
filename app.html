@@ -8,392 +8,321 @@
 <meta name="apple-mobile-web-app-title" content="Atleet">
 <title>Atleet</title>
 <style>
-  :root {
-    --bg: #0F1117; --bg2: #181B24; --bg3: #1F2330;
-    --accent: #F4501E; --accent2: #FF7A54;
-    --text: #F0F0F0; --muted: #6B7080; --border: #252A36;
-    --green: #3DDC84; --blue: #4A9EFF; --yellow: #FFD166; --purple: #B06EFF;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; overflow: hidden; }
-  #app { display: flex; flex-direction: column; height: 100dvh; }
-  #screen { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 80px; -webkit-overflow-scrolling: touch; }
-  #nav { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: rgba(15,17,23,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
-  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: none; border: none; color: var(--muted); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: color 0.2s; padding-top: 8px; }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn svg { width: 22px; height: 22px; }
-  .page { display: none; }
-  .page.active { display: block; }
-  .page-header { padding: 56px 20px 16px; display: flex; justify-content: space-between; align-items: flex-end; }
-  .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
-  .page-sub { color: var(--muted); font-size: 13px; margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 0 16px 12px; }
-  .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
-  .card-value { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -1px; font-family: 'SF Mono', 'Fira Mono', monospace; }
-  .card-unit { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 4px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 16px 12px; }
-  .grid2 .card { margin: 0; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 0 16px 12px; }
-  .grid3 .card { margin: 0; padding: 12px; }
-  .grid3 .card-value { font-size: 22px; }
-  .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 20px; margin: 20px 0 10px; }
-  .chart-wrap { margin: 0 16px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-  canvas { width: 100% !important; }
-  .training-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin: 0 16px 10px; }
-  .training-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-  .training-info { flex: 1; min-width: 0; }
-  .training-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .training-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .training-stat { text-align: right; flex-shrink: 0; }
-  .training-stat-val { font-size: 17px; font-weight: 700; font-family: 'SF Mono', monospace; color: var(--accent); }
-  .training-stat-unit { font-size: 11px; color: var(--muted); }
-  .meal-photo-btn { margin: 0 16px 12px; background: var(--accent); border: none; border-radius: 16px; padding: 18px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 16px; font-weight: 700; color: white; cursor: pointer; width: calc(100% - 32px); }
-  .meal-photo-btn:active { opacity: 0.85; }
-  .meal-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin: 0 16px 10px; overflow: hidden; }
-  .meal-item-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
-  .meal-name { font-size: 15px; font-weight: 600; }
-  .meal-time { font-size: 12px; color: var(--muted); }
-  .meal-kcal { font-size: 17px; font-weight: 700; font-family: 'SF Mono', monospace; color: var(--accent); }
-  .meal-macros { display: flex; border-top: 1px solid var(--border); }
-  .meal-macro { flex: 1; padding: 10px 0; text-align: center; border-right: 1px solid var(--border); }
-  .meal-macro:last-child { border-right: none; }
-  .meal-macro-val { font-size: 14px; font-weight: 700; font-family: 'SF Mono', monospace; }
-  .meal-macro-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; backdrop-filter: blur(12px); }
-  .overlay.hidden { display: none; }
-  .overlay-header { padding: 56px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .overlay-title { font-size: 20px; font-weight: 700; }
-  .overlay-close { background: var(--bg3); border: none; color: var(--text); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .overlay-body { flex: 1; overflow-y: auto; padding: 0 20px 40px; }
-  .analyse-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 16px; margin-bottom: 20px; }
-  .analyse-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; gap: 16px; }
-  .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .macro-ring-wrap { display: flex; justify-content: center; margin: 20px 0; position: relative; }
-  .macro-ring-wrap canvas { width: 160px !important; height: 160px !important; }
-  .macro-ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-  .macro-ring-kcal { font-size: 26px; font-weight: 800; font-family: 'SF Mono', monospace; }
-  .macro-ring-label { font-size: 11px; color: var(--muted); }
-  .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .macro-chip { background: var(--bg3); border-radius: 12px; padding: 12px; }
-  .macro-chip-val { font-size: 20px; font-weight: 700; font-family: 'SF Mono', monospace; }
-  .macro-chip-name { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
-  .macro-chip-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-  .btn-primary { background: var(--accent); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; color: white; cursor: pointer; width: 100%; margin-top: 8px; }
-  .btn-secondary { background: var(--bg3); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; width: 100%; margin-top: 8px; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; width: 100%; margin-top: 8px; }
-  .info-box { font-size: 14px; color: var(--muted); line-height: 1.6; background: var(--bg3); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
-  .info-box strong { color: var(--text); }
-  .input-row { display: flex; gap: 10px; margin: 0 16px 12px; }
-  .input-field { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 20px; font-weight: 700; font-family: 'SF Mono', monospace; color: var(--text); text-align: center; -webkit-appearance: none; }
-  .input-field:focus { outline: none; border-color: var(--accent); }
-  .input-field.text-left { text-align: left; font-size: 15px; font-weight: 400; font-family: -apple-system, sans-serif; }
-  .input-btn { background: var(--accent); border: none; border-radius: 12px; padding: 14px 20px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; }
-  .slider-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 0 16px 12px; }
-  .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .slider-name { font-size: 14px; font-weight: 600; }
-  .slider-val { font-size: 20px; font-weight: 700; font-family: 'SF Mono', monospace; color: var(--accent); }
-  input[type=range] { width: 100%; -webkit-appearance: none; height: 6px; background: var(--bg3); border-radius: 3px; outline: none; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-  .connect-btn { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin: 0 0 10px; width: 100%; cursor: pointer; text-align: left; }
-  .connect-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-  .connect-info { flex: 1; }
-  .connect-name { font-size: 15px; font-weight: 600; }
-  .connect-status { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-  .badge-ok { background: rgba(61,220,132,0.15); color: var(--green); }
-  .badge-no { background: rgba(244,80,30,0.15); color: var(--accent); }
-  .badge-sync { background: rgba(74,158,255,0.15); color: var(--blue); }
-  .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; z-index: 300; transition: transform 0.3s ease; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .sport-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--muted); cursor: pointer; }
-  .sport-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 700; }
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .sync-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--blue); cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  .sync-btn:active { opacity: 0.7; }
-  .hrv-bar { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-top: 8px; }
-  .hrv-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FF6B6B, #FFD166, #3DDC84); }
-  .garmin-status { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: rgba(61,220,132,0.08); border: 1px solid rgba(61,220,132,0.2); border-radius: 12px; margin: 0 16px 12px; font-size: 13px; color: var(--green); font-weight: 600; }
-  .dash-hero { margin: 0 16px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
-  .dash-kcal { font-size: 44px; font-weight: 800; font-family: 'SF Mono', monospace; letter-spacing: -2px; }
-  .dash-kcal span { font-size: 16px; color: var(--muted); font-weight: 400; }
-  .macro-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-  .macro-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-bottom: 9px; }
-  .macro-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-  .field-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .field-wrap { margin-bottom: 14px; }
+:root {
+  --bg:#0F1117;--bg2:#181B24;--bg3:#1F2330;
+  --accent:#F4501E;--text:#F0F0F0;--muted:#6B7080;--border:#252A36;
+  --green:#3DDC84;--blue:#4A9EFF;--yellow:#FFD166;--purple:#B06EFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh}
+#screen{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:80px;-webkit-overflow-scrolling:touch}
+#nav{position:fixed;bottom:0;left:0;right:0;height:80px;background:rgba(15,17,23,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--muted);font-size:10px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:color .2s;padding-top:8px}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:22px;height:22px}
+.page{display:none}
+.page.active{display:block}
+.ph{padding:56px 20px 16px;display:flex;justify-content:space-between;align-items:flex-end}
+.pt{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.ps{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin:0 16px 12px}
+.cl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.cv{font-size:32px;font-weight:700;letter-spacing:-1px;font-family:'SF Mono',monospace}
+.cu{font-size:14px;color:var(--muted);font-weight:400;margin-left:4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 12px}
+.g2 .card{margin:0}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 16px 12px}
+.g3 .card{margin:0;padding:12px}
+.g3 .cv{font-size:22px}
+.st{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 20px;margin:20px 0 10px}
+.cw{margin:0 16px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px}
+canvas{width:100%!important}
+.ti{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin:0 16px 10px}
+.tic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.tii{flex:1;min-width:0}
+.tin{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tim{font-size:12px;color:var(--muted);margin-top:2px}
+.tis{text-align:right;flex-shrink:0}
+.tisv{font-size:17px;font-weight:700;font-family:'SF Mono',monospace;color:var(--accent)}
+.tisu{font-size:11px;color:var(--muted)}
+.mpb{margin:0 16px 12px;background:var(--accent);border:none;border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:16px;font-weight:700;color:white;cursor:pointer;width:calc(100% - 32px)}
+.mpb:active{opacity:.85}
+.mi{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin:0 16px 10px;overflow:hidden}
+.mih{padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.mn{font-size:15px;font-weight:600}
+.mt{font-size:12px;color:var(--muted)}
+.mk{font-size:17px;font-weight:700;font-family:'SF Mono',monospace;color:var(--accent)}
+.mm{display:flex;border-top:1px solid var(--border)}
+.mmc{flex:1;padding:10px 0;text-align:center;border-right:1px solid var(--border)}
+.mmc:last-child{border-right:none}
+.mmv{font-size:14px;font-weight:700;font-family:'SF Mono',monospace}
+.mml{font-size:10px;color:var(--muted);text-transform:uppercase}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;flex-direction:column;backdrop-filter:blur(12px)}
+.ov.hidden{display:none}
+.ovh{padding:56px 20px 20px;display:flex;justify-content:space-between;align-items:center}
+.ovt{font-size:20px;font-weight:700}
+.ovc{background:var(--bg3);border:none;color:var(--text);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ovb{flex:1;overflow-y:auto;padding:0 20px 40px}
+.ai{width:100%;max-height:220px;object-fit:cover;border-radius:16px;margin-bottom:20px}
+.al{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:16px}
+.sp{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rw{display:flex;justify-content:center;margin:20px 0;position:relative}
+.rw canvas{width:160px!important;height:160px!important}
+.rc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.rk{font-size:26px;font-weight:800;font-family:'SF Mono',monospace}
+.rl{font-size:11px;color:var(--muted)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.mc{background:var(--bg3);border-radius:12px;padding:12px}
+.mcv{font-size:20px;font-weight:700;font-family:'SF Mono',monospace}
+.mcn{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.mcd{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.bp{background:var(--accent);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;color:white;cursor:pointer;width:100%;margin-top:8px}
+.bs{background:var(--bg3);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;color:var(--text);cursor:pointer;width:100%;margin-top:8px}
+.bo{background:transparent;border:1px solid var(--border);border-radius:14px;padding:14px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;width:100%;margin-top:8px}
+.ib{font-size:14px;color:var(--muted);line-height:1.6;background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px}
+.ib strong{color:var(--text)}
+.ir{display:flex;gap:10px;margin:0 16px 12px}
+.if{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:20px;font-weight:700;font-family:'SF Mono',monospace;color:var(--text);text-align:center;-webkit-appearance:none}
+.if:focus{outline:none;border-color:var(--accent)}
+.ift{text-align:left;font-size:15px;font-weight:400;font-family:-apple-system,sans-serif}
+.ib2{background:var(--accent);border:none;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:700;color:white;cursor:pointer}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin:0 16px 12px}
+.sl{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sn{font-size:14px;font-weight:600}
+.sv{font-size:20px;font-weight:700;font-family:'SF Mono',monospace;color:var(--accent)}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--bg3);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:var(--accent);border-radius:50%;cursor:pointer}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.sb{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--muted);cursor:pointer}
+.sb.active{background:var(--accent);border-color:var(--accent);color:white;font-weight:700}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.ei{font-size:40px;margin-bottom:12px}
+.fl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.fw{margin-bottom:14px}
+.gsb{display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.2);border-radius:12px;margin:0 16px 12px;font-size:13px;color:var(--green);font-weight:600}
+.dh{margin:0 16px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px}
+.dk{font-size:44px;font-weight:800;font-family:'SF Mono',monospace;letter-spacing:-2px}
+.dk span{font-size:16px;color:var(--muted);font-weight:400}
+.mbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.mb{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:9px}
+.mbf{height:100%;border-radius:3px;transition:width .6s ease}
+/* AI Coach */
+.coach-card{background:linear-gradient(135deg,#1F2330,#181B24);border:1px solid var(--border);border-radius:20px;padding:20px;margin:0 16px 12px;position:relative;overflow:hidden}
+.coach-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(244,80,30,.15),transparent);border-radius:50%}
+.coach-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:8px}
+.coach-text{font-size:15px;line-height:1.7;color:var(--text)}
+.coach-loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.insight-row{display:flex;gap:8px;margin:0 16px 10px;overflow-x:auto;padding-bottom:4px}
+.insight-chip{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:140px}
+.insight-val{font-size:20px;font-weight:700;font-family:'SF Mono',monospace}
+.insight-label{font-size:11px;color:var(--muted);margin-top:2px}
+.insight-trend{font-size:11px;margin-top:4px;font-weight:600}
+/* Import area */
+.import-zone{border:2px dashed var(--border);border-radius:16px;padding:30px 20px;text-align:center;margin:0 16px 12px;cursor:pointer;transition:border-color .2s}
+.import-zone:active{border-color:var(--accent)}
+.import-zone-icon{font-size:36px;margin-bottom:10px}
+.import-zone-text{font-size:15px;font-weight:600;margin-bottom:4px}
+.import-zone-sub{font-size:13px;color:var(--muted)}
+.mb-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="screen">
+<div id="screen">
 
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Goedemorgen 👋</div>
-          <div class="page-sub" id="dash-date"></div>
-        </div>
-        <button class="sync-btn" onclick="quickSync(this)">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sync
-        </button>
-      </div>
-
-      <div id="garmin-connected-banner" class="garmin-status hidden">
-        ⌚ Garmin gekoppeld · Laatste sync: <span id="last-sync-time">–</span>
-      </div>
-
-      <div class="dash-hero">
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Vandaag · Calorieën gegeten</div>
-        <div class="dash-kcal" id="dash-kcal-val">0 <span>kcal</span></div>
-        <div style="margin-top:14px">
-          <div class="macro-bar-label"><span>🍞 Koolh.</span><span id="bar-carbs-val">0g</span></div>
-          <div class="macro-bar"><div class="macro-bar-fill" id="bar-carbs" style="width:0%;background:#4A9EFF"></div></div>
-          <div class="macro-bar-label"><span>🥩 Eiwit</span><span id="bar-protein-val">0g</span></div>
-          <div class="macro-bar"><div class="macro-bar-fill" id="bar-protein" style="width:0%;background:#3DDC84"></div></div>
-          <div class="macro-bar-label"><span>🧈 Vet</span><span id="bar-fat-val">0g</span></div>
-          <div class="macro-bar"><div class="macro-bar-fill" id="bar-fat" style="width:0%;background:#FFD166"></div></div>
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="card">
-          <div class="card-label">Gewicht</div>
-          <div class="card-value" id="dash-weight">–<span class="card-unit">kg</span></div>
-        </div>
-        <div class="card">
-          <div class="card-label">Rusthartslag</div>
-          <div class="card-value" id="dash-rhr">–<span class="card-unit">bpm</span></div>
-        </div>
-        <div class="card">
-          <div class="card-label">Slaap</div>
-          <div class="card-value" id="dash-slaap">–<span class="card-unit">u</span></div>
-        </div>
-        <div class="card">
-          <div class="card-label">HRV</div>
-          <div class="card-value" id="dash-hrv">–<span class="card-unit">ms</span></div>
-        </div>
-      </div>
-
-      <div class="grid3">
-        <div class="card">
-          <div class="card-label">Stappen</div>
-          <div class="card-value" id="dash-stappen">–</div>
-        </div>
-        <div class="card">
-          <div class="card-label">VO2max</div>
-          <div class="card-value" id="dash-vo2">–</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Stress</div>
-          <div class="card-value" id="dash-stress">–</div>
-        </div>
-      </div>
-
-      <div class="section-title">Recente training</div>
-      <div id="dash-last-training">
-        <div class="empty"><div class="empty-icon">🏃</div>Koppel Garmin om trainingen te laden</div>
-      </div>
-
-      <div class="section-title">Gewicht trend</div>
-      <div class="chart-wrap"><canvas id="weight-chart-dash" height="110"></canvas></div>
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="ph">
+    <div><div class="pt">Goedemorgen 👋</div><div class="ps" id="dash-date"></div></div>
+    <button class="sb" onclick="goTo('coach',document.querySelectorAll('.nav-btn')[4])">🤖 Coach</button>
+  </div>
+  <div id="garmin-banner" class="gsb hidden">⌚ Garmin data geladen · <span id="last-import"></span></div>
+  <div class="dh">
+    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Vandaag · Calorieën</div>
+    <div class="dk" id="dash-kcal">0 <span>kcal</span></div>
+    <div style="margin-top:14px">
+      <div class="mbl"><span>🍞 Koolh.</span><span id="bc-v">0g</span></div>
+      <div class="mb"><div class="mbf" id="bc" style="width:0%;background:#4A9EFF"></div></div>
+      <div class="mbl"><span>🥩 Eiwit</span><span id="bp-v">0g</span></div>
+      <div class="mb"><div class="mbf" id="bprot" style="width:0%;background:#3DDC84"></div></div>
+      <div class="mbl"><span>🧈 Vet</span><span id="bf-v">0g</span></div>
+      <div class="mb"><div class="mbf" id="bf" style="width:0%;background:#FFD166"></div></div>
     </div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="cl">Gewicht</div><div class="cv" id="d-gew">–<span class="cu">kg</span></div></div>
+    <div class="card"><div class="cl">Rusthartslag</div><div class="cv" id="d-rhr">–<span class="cu">bpm</span></div></div>
+    <div class="card"><div class="cl">Slaap</div><div class="cv" id="d-slaap">–<span class="cu">u</span></div></div>
+    <div class="card"><div class="cl">HRV</div><div class="cv" id="d-hrv">–<span class="cu">ms</span></div></div>
+  </div>
+  <div class="g3">
+    <div class="card"><div class="cl">Stappen</div><div class="cv" id="d-stap" style="font-size:20px">–</div></div>
+    <div class="card"><div class="cl">VO2max</div><div class="cv" id="d-vo2">–</div></div>
+    <div class="card"><div class="cl">Stress</div><div class="cv" id="d-str">–</div></div>
+  </div>
+  <div class="st">Recente training</div>
+  <div id="d-last-t"><div class="empty"><div class="ei">🏃</div>Importeer Garmin data</div></div>
+  <div class="st">Gewicht trend</div>
+  <div class="cw"><canvas id="wc-dash" height="110"></canvas></div>
+</div>
 
-    <!-- MAALTIJDEN -->
-    <div class="page" id="page-maaltijden">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Maaltijden</div>
-          <div class="page-sub" id="meal-date"></div>
-        </div>
-      </div>
-      <button class="meal-photo-btn" onclick="openCamera()">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Foto maken van maaltijd
-      </button>
-      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
-      <div class="section-title">Vandaag</div>
-      <div id="meals-list"><div class="empty"><div class="empty-icon">🍽️</div>Nog geen maaltijden gelogd</div></div>
+<!-- ETEN -->
+<div class="page" id="page-maaltijden">
+  <div class="ph"><div><div class="pt">Maaltijden</div><div class="ps" id="meal-date"></div></div></div>
+  <button class="mpb" onclick="openCamera()">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Foto maken van maaltijd
+  </button>
+  <input type="file" id="cam" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+  <div class="st">Vandaag</div>
+  <div id="meals-list"><div class="empty"><div class="ei">🍽️</div>Nog geen maaltijden</div></div>
+</div>
+
+<!-- TRAININGEN -->
+<div class="page" id="page-trainingen">
+  <div class="ph"><div><div class="pt">Trainingen</div><div class="ps">Garmin + handmatig</div></div></div>
+  <div class="g2" style="margin-bottom:4px">
+    <div class="card"><div class="cl">Deze week</div><div class="cv" id="t-wk">0<span class="cu">x</span></div></div>
+    <div class="card"><div class="cl">Totaal km</div><div class="cv" id="t-km">0<span class="cu">km</span></div></div>
+  </div>
+  <div class="st">Handmatig toevoegen</div>
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="sb active" data-sport="🏃 Hardlopen" onclick="selSport(this)">🏃 Hardlopen</button>
+      <button class="sb" data-sport="🚴 Fietsen" onclick="selSport(this)">🚴 Fietsen</button>
+      <button class="sb" data-sport="🏋️ Gym" onclick="selSport(this)">🏋️ Gym</button>
+      <button class="sb" data-sport="⚡ HIIT/Hyrox" onclick="selSport(this)">⚡ HIIT/Hyrox</button>
     </div>
-
-    <!-- TRAININGEN -->
-    <div class="page" id="page-trainingen">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Trainingen</div>
-          <div class="page-sub">Garmin + handmatig</div>
-        </div>
-        <button class="sync-btn" onclick="quickSync(this)">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sync
-        </button>
-      </div>
-      <div class="grid2" style="margin-bottom:4px">
-        <div class="card"><div class="card-label">Deze week</div><div class="card-value" id="t-week-count">0<span class="card-unit">x</span></div></div>
-        <div class="card"><div class="card-label">Totaal km</div><div class="card-value" id="t-week-km">0<span class="card-unit">km</span></div></div>
-      </div>
-      <div class="section-title">Handmatig toevoegen</div>
-      <div class="card">
-        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-          <button class="sport-btn active" data-sport="🏃 Hardlopen" onclick="selectSport(this)">🏃 Hardlopen</button>
-          <button class="sport-btn" data-sport="🚴 Fietsen" onclick="selectSport(this)">🚴 Fietsen</button>
-          <button class="sport-btn" data-sport="🏋️ Gym" onclick="selectSport(this)">🏋️ Gym</button>
-          <button class="sport-btn" data-sport="⚡ HIIT/Hyrox" onclick="selectSport(this)">⚡ HIIT/Hyrox</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div><div class="field-label">Duur (min)</div><input class="input-field" id="t-duur" type="number" placeholder="60" style="width:100%;margin:0;font-size:16px;padding:12px"></div>
-          <div><div class="field-label">Afstand (km)</div><input class="input-field" id="t-afstand" type="number" placeholder="0" step="0.1" style="width:100%;margin:0;font-size:16px;padding:12px"></div>
-        </div>
-        <div style="margin-bottom:12px"><div class="field-label">Notitie</div><input class="input-field text-left" id="t-notitie" type="text" placeholder="Hoe ging het?" style="width:100%;margin:0;padding:12px"></div>
-        <button class="btn-primary" onclick="logTraining()">Training opslaan</button>
-      </div>
-      <div class="section-title">Geschiedenis</div>
-      <div id="trainingen-list"><div class="empty"><div class="empty-icon">🏋️</div>Nog geen trainingen</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><div class="fl">Duur (min)</div><input class="if" id="t-dur" type="number" placeholder="60" style="width:100%;margin:0;font-size:16px;padding:12px"></div>
+      <div><div class="fl">Afstand (km)</div><input class="if" id="t-afs" type="number" placeholder="0" step="0.1" style="width:100%;margin:0;font-size:16px;padding:12px"></div>
     </div>
+    <div style="margin-bottom:12px"><div class="fl">Notitie</div><input class="if ift" id="t-not" type="text" placeholder="Hoe ging het?" style="width:100%;margin:0;padding:12px"></div>
+    <button class="bp" onclick="logTraining()">Training opslaan</button>
+  </div>
+  <div class="st">Geschiedenis</div>
+  <div id="t-list"><div class="empty"><div class="ei">🏋️</div>Nog geen trainingen</div></div>
+</div>
 
-    <!-- GEZONDHEID -->
-    <div class="page" id="page-gezondheid">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Gezondheid</div>
-          <div class="page-sub">Garmin data + gewicht</div>
-        </div>
-        <button class="sync-btn" onclick="quickSync(this)">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sync
-        </button>
-      </div>
+<!-- GEZONDHEID -->
+<div class="page" id="page-gezondheid">
+  <div class="ph"><div><div class="pt">Gezondheid</div><div class="ps">Data & trends</div></div></div>
+  <div class="st">Gewicht invoeren</div>
+  <div class="ir">
+    <input class="if" id="weight-in" type="number" step="0.1" placeholder="75.4">
+    <button class="ib2" onclick="logWeight()">Opslaan</button>
+  </div>
+  <div class="st">Vandaag van Garmin</div>
+  <div class="g2">
+    <div class="card"><div class="cl">😴 Slaap</div><div class="cv" id="g-slaap">–<span class="cu">u</span></div></div>
+    <div class="card"><div class="cl">💓 Rusthartslag</div><div class="cv" id="g-rhr">–<span class="cu">bpm</span></div></div>
+    <div class="card"><div class="cl">📊 HRV</div><div class="cv" id="g-hrv">–<span class="cu">ms</span></div></div>
+    <div class="card"><div class="cl">🫁 VO2max</div><div class="cv" id="g-vo2">–</div></div>
+    <div class="card"><div class="cl">👟 Stappen</div><div class="cv" id="g-stap" style="font-size:20px">–</div></div>
+    <div class="card"><div class="cl">😓 Stress</div><div class="cv" id="g-str">–</div></div>
+  </div>
+  <div class="st">Slaapfases</div>
+  <div class="card" id="sleep-phases"><div style="color:var(--muted);font-size:13px">Importeer Garmin data om slaapfases te zien</div></div>
+  <div class="st">Gewicht — 30 dagen</div>
+  <div class="cw"><canvas id="wc-main" height="130"></canvas></div>
+  <div class="st">HRV trend</div>
+  <div class="cw"><canvas id="hrv-chart" height="130"></canvas></div>
+  <div class="st">Slaap trend</div>
+  <div class="cw"><canvas id="sleep-chart" height="130"></canvas></div>
+</div>
 
-      <div class="section-title">Gewicht invoeren</div>
-      <div class="input-row">
-        <input class="input-field" id="weight-input" type="number" step="0.1" placeholder="75.4">
-        <button class="input-btn" onclick="logWeight()">Opslaan</button>
-      </div>
+<!-- AI COACH -->
+<div class="page" id="page-coach">
+  <div class="ph"><div><div class="pt">AI Coach 🤖</div><div class="ps">Persoonlijke inzichten</div></div></div>
 
-      <div class="section-title">Vandaag van Garmin</div>
-      <div class="grid2">
-        <div class="card"><div class="card-label">😴 Slaap</div><div class="card-value" id="g-slaap">–<span class="card-unit">u</span></div></div>
-        <div class="card"><div class="card-label">💓 Rusthartslag</div><div class="card-value" id="g-rhr">–<span class="card-unit">bpm</span></div></div>
-        <div class="card"><div class="card-label">📊 HRV</div><div class="card-value" id="g-hrv">–<span class="card-unit">ms</span></div></div>
-        <div class="card"><div class="card-label">🫁 VO2max</div><div class="card-value" id="g-vo2">–</div></div>
-        <div class="card"><div class="card-label">👟 Stappen</div><div class="card-value" id="g-stappen" style="font-size:22px">–</div></div>
-        <div class="card"><div class="card-label">😓 Stress</div><div class="card-value" id="g-stress">–</div></div>
-      </div>
-
-      <div class="section-title">Slaapfases</div>
-      <div class="card" id="sleep-phases-card">
-        <div style="color:var(--muted);font-size:13px">Synchroniseer Garmin om slaapdata te laden</div>
-      </div>
-
-      <div class="section-title">Gewicht — 30 dagen</div>
-      <div class="chart-wrap"><canvas id="weight-chart-main" height="130"></canvas></div>
-
-      <div class="section-title">HRV trend</div>
-      <div class="chart-wrap"><canvas id="hrv-chart" height="130"></canvas></div>
-
-      <div class="section-title">Slaap trend</div>
-      <div class="chart-wrap"><canvas id="sleep-chart" height="130"></canvas></div>
+  <div class="coach-card" id="coach-main">
+    <div class="coach-title">Dagelijkse analyse</div>
+    <div class="coach-loading" id="coach-loading">
+      <div class="sp" style="width:20px;height:20px;border-width:2px"></div>
+      Analyse laden…
     </div>
-
-    <!-- PROFIEL & GARMIN -->
-    <div class="page" id="page-profiel">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Profiel</div>
-          <div class="page-sub">Instellingen & Garmin</div>
-        </div>
-      </div>
-
-      <div class="section-title">Garmin Connect</div>
-      <div style="padding:0 16px">
-        <div class="info-box">
-          <strong>Hoe werkt het?</strong><br><br>
-          De app logt in op jouw Garmin Connect account (dezelfde inlog als de Garmin Connect app op je iPhone) en haalt je data op. Je gegevens worden <strong>alleen lokaal opgeslagen</strong> op jouw apparaat.<br><br>
-          Dit werkt via de onofficiële Garmin Connect API — dezelfde methode die tools zoals Tapiriik gebruiken.
-        </div>
-
-        <div class="field-wrap">
-          <div class="field-label">Garmin Connect e-mailadres</div>
-          <input class="input-field text-left" id="garmin-email" type="email" placeholder="jouw@email.com" style="width:100%;margin:0;padding:14px">
-        </div>
-        <div class="field-wrap">
-          <div class="field-label">Wachtwoord</div>
-          <input class="input-field text-left" id="garmin-password" type="password" placeholder="••••••••" style="width:100%;margin:0;padding:14px">
-        </div>
-
-        <div class="info-box" style="margin-top:4px">
-          <strong>⚠️ Let op:</strong> Je wachtwoord wordt alleen opgeslagen in de lokale opslag van je browser (localStorage). Gebruik dit alleen op je eigen apparaat. De app stuurt je wachtwoord naar een CORS-proxy om Garmin te bereiken.
-        </div>
-
-        <button class="btn-primary" onclick="connectGarmin()" id="garmin-connect-btn">Koppelen & synchroniseren</button>
-        <button class="btn-outline" id="garmin-sync-btn" onclick="syncGarminData()" style="display:none">🔄 Nu synchroniseren</button>
-        <button class="btn-outline" id="garmin-disconnect-btn" onclick="disconnectGarmin()" style="display:none;margin-top:8px;color:var(--accent);border-color:var(--accent)">Ontkoppelen</button>
-
-        <div id="garmin-sync-log" style="margin-top:16px;font-size:12px;color:var(--muted);line-height:1.8;display:none"></div>
-      </div>
-
-      <div class="section-title" style="margin-top:8px">Over de app</div>
-      <div class="card" style="margin-bottom:30px">
-        <div style="font-size:14px;color:var(--muted);line-height:1.6">
-          <strong style="color:var(--text)">Atleet</strong> gebruikt Claude AI om maaltijdfoto's te analyseren en Garmin Connect voor al je gezondheidsdata. Alle data blijft lokaal op je apparaat.<br><br>
-          <strong style="color:var(--text)">Homescreen:</strong> Safari → Delen → Zet op beginscherm
-        </div>
-      </div>
-    </div>
-
+    <div class="coach-text hidden" id="coach-text"></div>
   </div>
 
-  <nav id="nav">
-    <button class="nav-btn active" onclick="goTo('dashboard',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Dashboard
-    </button>
-    <button class="nav-btn" onclick="goTo('maaltijden',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      Eten
-    </button>
-    <button class="nav-btn" onclick="goTo('trainingen',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M4 12l-2 2m2-2l-2-2m18 2l-2 2m2-2l-2-2"/></svg>
-      Training
-    </button>
-    <button class="nav-btn" onclick="goTo('gezondheid',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      Gezondheid
-    </button>
-    <button class="nav-btn" onclick="goTo('profiel',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Profiel
-    </button>
-  </nav>
+  <div class="st">Inzichten</div>
+  <div class="insight-row" id="insight-row">
+    <div class="insight-chip"><div class="insight-val" id="ins-slaap-avg">–</div><div class="insight-label">Gem. slaap (7d)</div><div class="insight-trend" id="ins-slaap-tr"></div></div>
+    <div class="insight-chip"><div class="insight-val" id="ins-hrv-avg">–</div><div class="insight-label">Gem. HRV (7d)</div><div class="insight-trend" id="ins-hrv-tr"></div></div>
+    <div class="insight-chip"><div class="insight-val" id="ins-rhr-avg">–</div><div class="insight-label">Gem. RHR (7d)</div><div class="insight-trend" id="ins-rhr-tr"></div></div>
+    <div class="insight-chip"><div class="insight-val" id="ins-t-week">–</div><div class="insight-label">Trainingen/week</div><div class="insight-trend" id="ins-t-tr"></div></div>
+  </div>
+
+  <div class="st">Vraag de coach</div>
+  <div class="card">
+    <div style="margin-bottom:10px"><textarea class="if ift" id="coach-vraag" placeholder="Bijv: Hoe kan ik mijn slaap verbeteren? Of: Ben ik klaar voor een zware training?" style="width:100%;margin:0;padding:12px;min-height:80px;resize:none;border-radius:8px"></textarea></div>
+    <button class="bp" onclick="vraagCoach()">Vraag stellen</button>
+  </div>
+  <div class="coach-card hidden" id="coach-antwoord">
+    <div class="coach-title">Coach antwoord</div>
+    <div class="coach-text" id="coach-antwoord-text"></div>
+  </div>
+
+  <div class="st">Garmin data importeren</div>
+  <div class="ib" style="margin:0 16px 12px">
+    <strong>Hoe exporteer je data uit Garmin Connect?</strong><br><br>
+    1. Open de <strong>Garmin Connect app</strong> op je iPhone<br>
+    2. Ga naar <strong>Meer → Activiteiten</strong> voor activiteiten<br>
+    3. Of ga naar <strong>Gezondheid → Slaap/Hartslag</strong><br>
+    4. Tik op de <strong>drie puntjes → Exporteer als CSV</strong><br><br>
+    <strong>Of via de website:</strong> connect.garmin.com → Activiteiten → Exporteren
+  </div>
+
+  <div class="import-zone" onclick="document.getElementById('csv-input').click()">
+    <div class="import-zone-icon">📂</div>
+    <div class="import-zone-text">Garmin CSV importeren</div>
+    <div class="import-zone-sub">Tik om een bestand te kiezen</div>
+  </div>
+  <input type="file" id="csv-input" accept=".csv,.fit" style="display:none" onchange="importCSV(event)">
+  <div id="import-log" style="margin:0 16px 20px;font-size:12px;color:var(--muted);line-height:1.8;display:none"></div>
+</div>
+
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nav-btn active" onclick="goTo('dashboard',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="nav-btn" onclick="goTo('maaltijden',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Eten
+  </button>
+  <button class="nav-btn" onclick="goTo('trainingen',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M4 12l-2 2m2-2l-2-2m18 2l-2 2m2-2l-2-2"/></svg>
+    Training
+  </button>
+  <button class="nav-btn" onclick="goTo('gezondheid',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    Gezondheid
+  </button>
+  <button class="nav-btn" onclick="goTo('coach',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    Coach
+  </button>
+</nav>
 </div>
 
 <!-- ANALYSE OVERLAY -->
-<div class="overlay hidden" id="analyse-overlay">
-  <div class="overlay-header">
-    <span class="overlay-title">Maaltijd analyseren</span>
-    <button class="overlay-close" onclick="closeOverlay()">✕</button>
-  </div>
-  <div class="overlay-body">
-    <img id="analyse-img" class="analyse-img" src="" alt="">
-    <div class="analyse-loading" id="analyse-loading">
-      <div class="spinner"></div>
-      <div style="color:var(--muted);font-size:14px">AI analyseert je maaltijd…</div>
-    </div>
-    <div class="hidden" id="analyse-result">
-      <div class="info-box" id="ai-beschrijving"></div>
-      <div class="macro-ring-wrap">
-        <canvas id="macro-ring" width="160" height="160"></canvas>
-        <div class="macro-ring-center">
-          <div class="macro-ring-kcal" id="ring-kcal">0</div>
-          <div class="macro-ring-label">kcal</div>
-        </div>
-      </div>
-      <div class="macro-grid" id="macro-grid"></div>
-      <button class="btn-primary" onclick="saveMeal()">Maaltijd opslaan</button>
-      <button class="btn-secondary" onclick="closeOverlay()">Annuleren</button>
+<div class="ov hidden" id="analyse-ov">
+  <div class="ovh"><span class="ovt">Maaltijd analyseren</span><button class="ovc" onclick="closeOv()">✕</button></div>
+  <div class="ovb">
+    <img id="a-img" class="ai" src="" alt="">
+    <div class="al" id="a-load"><div class="sp"></div><div style="color:var(--muted);font-size:14px">AI analyseert je maaltijd…</div></div>
+    <div class="hidden" id="a-res">
+      <div class="ib" id="a-desc"></div>
+      <div class="rw"><canvas id="macro-ring" width="160" height="160"></canvas><div class="rc"><div class="rk" id="r-kcal">0</div><div class="rl">kcal</div></div></div>
+      <div class="mg" id="macro-grid"></div>
+      <button class="bp" onclick="saveMeal()">Maaltijd opslaan</button>
+      <button class="bs" onclick="closeOv()">Annuleren</button>
     </div>
   </div>
 </div>
@@ -401,606 +330,582 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== STORAGE =====
-const DB = {
-  get: k => { try { return JSON.parse(localStorage.getItem('atleet_' + k)) } catch(e) { return null } },
-  set: (k, v) => localStorage.setItem('atleet_' + k, JSON.stringify(v)),
-  del: k => localStorage.removeItem('atleet_' + k),
-};
-const today = () => new Date().toISOString().split('T')[0];
-let currentMealData = null;
-let selectedSport = '🏃 Hardlopen';
+const DB={get:k=>{try{return JSON.parse(localStorage.getItem('atleet_'+k))}catch(e){return null}},set:(k,v)=>localStorage.setItem('atleet_'+k,JSON.stringify(v)),del:k=>localStorage.removeItem('atleet_'+k)};
+const today=()=>new Date().toISOString().split('T')[0];
+let curMeal=null,selSportVal='🏃 Hardlopen';
 
-// ===== NAV =====
-function goTo(page, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+function goTo(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
-  if (page === 'dashboard') refreshDashboard();
-  if (page === 'maaltijden') refreshMeals();
-  if (page === 'trainingen') refreshTrainingen();
-  if (page === 'gezondheid') refreshGezondheid();
-  if (page === 'profiel') refreshProfiel();
+  if(p==='dashboard')refreshDash();
+  if(p==='maaltijden')refreshMeals();
+  if(p==='trainingen')refreshTrainingen();
+  if(p==='gezondheid')refreshGez();
+  if(p==='coach')refreshCoach();
 }
 
-// ===== GARMIN CONNECT =====
-// Uses a CORS proxy to reach Garmin Connect's unofficial API
-const PROXY = '';
+// ===== GARMIN CSV IMPORT =====
+function ilog(msg){const el=document.getElementById('import-log');if(el){el.style.display='block';el.innerHTML+=msg+'<br>';}}
 
-
-let garminCookies = '';
-
-function log(msg) {
-  const el = document.getElementById('garmin-sync-log');
-  if (el) { el.style.display = 'block'; el.innerHTML += msg + '<br>'; }
-  console.log(msg);
-}
-
-const RAILWAY_URL = 'https://garmin-proxy-production-3678.up.railway.app';
-
-async function connectGarmin() {
-  const email = document.getElementById('garmin-email').value.trim();
-  const pass = document.getElementById('garmin-password').value;
-  if (!email || !pass) { showToast('Vul e-mail en wachtwoord in'); return; }
-
-  const btn = document.getElementById('garmin-connect-btn');
-  btn.textContent = 'Bezig met koppelen…';
-  btn.disabled = true;
-  document.getElementById('garmin-sync-log').innerHTML = '';
-  document.getElementById('garmin-sync-log').style.display = 'block';
-
-  DB.set('garmin_email', email);
-  DB.set('garmin_pass', pass);
-
-  await syncGarminData();
-}
-
-async function syncGarminData() {
-  const syncBtn = document.getElementById('garmin-sync-btn');
-  if (syncBtn) { syncBtn.textContent = '⏳ Bezig…'; syncBtn.disabled = true; }
-
-  const email = DB.get('garmin_email');
-  const pass = DB.get('garmin_pass');
-
-  if (!email || !pass) {
-    showToast('Vul eerst je Garmin gegevens in');
-    return;
+function parseCSVLine(line){
+  const res=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){inQ=!inQ}
+    else if(line[i]===','&&!inQ){res.push(cur.trim());cur=''}
+    else cur+=line[i];
   }
+  res.push(cur.trim());
+  return res;
+}
 
-  log('📡 Verbinding maken met Garmin via jouw server…');
+function parseCSV(text){
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2)return[];
+  const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().replace(/[^a-z0-9]/g,''));
+  return lines.slice(1).map(line=>{
+    const vals=parseCSVLine(line);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    return obj;
+  });
+}
 
-  try {
-    const res = await fetch(`${RAILWAY_URL}/garmin/sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass }),
+function detectGarminType(headers){
+  const h=headers.join(' ');
+  if(h.includes('activity')&&(h.includes('distance')||h.includes('time')))return'activities';
+  if(h.includes('sleep')&&h.includes('deep'))return'sleep';
+  if(h.includes('restingheartrate')||h.includes('restingheartratevalue'))return'heartrate';
+  if(h.includes('stress'))return'stress';
+  if(h.includes('steps'))return'steps';
+  if(h.includes('hrv')||h.includes('hrvstatus'))return'hrv';
+  return'unknown';
+}
+
+async function importCSV(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  document.getElementById('import-log').innerHTML='';
+  ilog('📂 Bestand geladen: '+file.name);
+
+  const text=await file.text();
+  const rows=parseCSV(text);
+  if(!rows.length){ilog('❌ Geen data gevonden in dit bestand');return;}
+
+  const headers=Object.keys(rows[0]);
+  const type=detectGarminType(headers);
+  ilog('🔍 Type herkend: '+type+' ('+rows.length+' rijen)');
+
+  const sportMap={
+    'running':'🏃 Hardlopen','trail running':'🏃 Hardlopen','indoor running':'🏃 Hardlopen',
+    'cycling':'🚴 Fietsen','indoor cycling':'🚴 Fietsen','virtual ride':'🚴 Fietsen',
+    'strength training':'🏋️ Gym','weight training':'🏋️ Gym','functional strength training':'🏋️ Gym',
+    'hiit':'⚡ HIIT/Hyrox','cardio':'⚡ HIIT/Hyrox','hyrox':'⚡ HIIT/Hyrox',
+    'walking':'🚶 Wandelen','swimming':'🏊 Zwemmen','open water swimming':'🏊 Zwemmen',
+  };
+
+  let imported=0;
+
+  if(type==='activities'){
+    const trainingen=DB.get('trainingen')||[];
+    rows.forEach(r=>{
+      // Garmin activity export columns vary — try multiple column names
+      const naam=r.activityname||r.name||r.title||'';
+      const sportRaw=(r.activitytype||r.type||r.sport||'').toLowerCase();
+      const sport=sportMap[sportRaw]||'🏃 Sport';
+      const datum=r.date||r.starttime||r.activitydate||'';
+      const duurStr=r.time||r.duration||r.elapsedtime||'0';
+      const afstandStr=r.distance||'0';
+      const hrStr=r.avghr||r.averagehr||r.heartrateaverage||'0';
+      const kcalStr=r.calories||'0';
+
+      // Parse duration (can be HH:MM:SS or minutes)
+      let duur=0;
+      if(duurStr.includes(':')){
+        const parts=duurStr.split(':');
+        if(parts.length===3)duur=parseInt(parts[0])*60+parseInt(parts[1]);
+        else if(parts.length===2)duur=parseInt(parts[0]);
+      } else duur=Math.round(parseFloat(duurStr)||0);
+
+      const afstand=parseFloat((afstandStr+'').replace(',','.'))||0;
+      const id=naam+datum+duur;
+      const exists=trainingen.find(t=>t.import_id===id);
+      if(!exists&&datum){
+        trainingen.push({
+          date:datum,sport,duur,afstand,notitie:naam,
+          hartslag:parseInt(hrStr)||0,kcalVerbrand:parseInt(kcalStr)||0,
+          import_id:id,
+        });
+        imported++;
+      }
     });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || `Server fout ${res.status}`);
-    }
-
-    const data = await res.json();
-    log('✓ Data ontvangen van server');
-
-    const d = data.date || today();
-
-    // Daily
-    if (data.daily) {
-      const gd = DB.get('garmin_daily') || {};
-      gd[d] = data.daily;
-      DB.set('garmin_daily', gd);
-      log(`✓ Stappen: ${data.daily.stappen.toLocaleString()}`);
-    }
-
-    // Sleep
-    if (data.sleep) {
-      const sl = DB.get('garmin_sleep') || {};
-      sl[d] = data.sleep;
-      DB.set('garmin_sleep', sl);
-      log(`✓ Slaap: ${data.sleep.duur}u`);
-    }
-
-    // Heart rate
-    if (data.hartslag) {
-      const hd = DB.get('garmin_hr') || {};
-      hd[d] = data.hartslag;
-      DB.set('garmin_hr', hd);
-      log(`✓ Rusthartslag: ${data.hartslag.rhr} bpm`);
-    }
-
-    // HRV
-    if (data.hrv) {
-      const hv = DB.get('garmin_hrv') || {};
-      hv[d] = data.hrv;
-      DB.set('garmin_hrv', hv);
-      log(`✓ HRV: ${data.hrv.nachtelijk}ms`);
-    }
-
-    // VO2max
-    if (data.vo2max) {
-      DB.set('garmin_vo2', data.vo2max);
-      log(`✓ VO2max: ${data.vo2max}`);
-    }
-
-    // Activities
-    if (data.activiteiten && data.activiteiten.length > 0) {
-      const trainingen = DB.get('trainingen') || [];
-      let nieuw = 0;
-      data.activiteiten.forEach(a => {
-        const exists = trainingen.find(t => t.garmin_id === a.garmin_id);
-        if (!exists) {
-          trainingen.push({
-            date: a.datum,
-            sport: a.sport,
-            duur: a.duur,
-            afstand: a.afstand,
-            notitie: a.naam,
-            hartslag: a.hartslag,
-            maxHartslag: a.maxHartslag,
-            kcalVerbrand: a.kcalVerbrand,
-            garmin_id: a.garmin_id,
-          });
-          nieuw++;
-        }
-      });
-      DB.set('trainingen', trainingen);
-      log(`✓ ${nieuw} nieuwe activiteiten geladen`);
-    }
-
-    DB.set('garmin_connected', true);
-    DB.set('garmin_last_sync', new Date().toISOString());
-
-    const samenvatting = (data.synced || []).join(', ') || 'Sync klaar';
-    log('✅ ' + samenvatting);
-    showToast('Garmin gesynchroniseerd ✓');
-
-    refreshDashboard();
-    refreshGezondheid();
-    refreshTrainingen();
-    refreshProfiel();
-
-  } catch(err) {
-    log('❌ Fout: ' + err.message);
-    showToast('Sync mislukt: ' + err.message);
+    DB.set('trainingen',trainingen);
+    ilog(`✓ ${imported} activiteiten geïmporteerd`);
   }
 
-  if (syncBtn) { syncBtn.textContent = '🔄 Nu synchroniseren'; syncBtn.disabled = false; }
-  const connectBtn = document.getElementById('garmin-connect-btn');
-  if (connectBtn) { connectBtn.textContent = 'Koppelen & synchroniseren'; connectBtn.disabled = false; }
+  else if(type==='sleep'){
+    const sl=DB.get('garmin_sleep')||{};
+    rows.forEach(r=>{
+      const datum=r.date||r.sleepdate||r.calendardate||'';
+      if(!datum)return;
+      const d=datum.split('T')[0].split(' ')[0];
+      const duur=parseFloat(r.sleeptime||r.totalsleeptimehours||r.sleeptimehours||r.duration||'0');
+      const diepe=parseFloat(r.deepsleeptimehours||r.deepsleepduration||r.deep||'0');
+      const rem=parseFloat(r.remsleeptimehours||r.remsleepduration||r.rem||'0');
+      const lichte=parseFloat(r.lightsleeptimehours||r.lightsleepduration||r.light||'0');
+      const score=parseInt(r.sleepquality||r.sleepscore||r.score||'0');
+      if(duur>0){
+        sl[d]={duur:Math.round(duur*10)/10,diepe:Math.round(diepe*60),rem:Math.round(rem*60),lichte:Math.round(lichte*60),score};
+        imported++;
+      }
+    });
+    DB.set('garmin_sleep',sl);
+    ilog(`✓ ${imported} slaapdagen geïmporteerd`);
+  }
+
+  else if(type==='heartrate'){
+    const hr=DB.get('garmin_hr')||{};
+    rows.forEach(r=>{
+      const datum=r.date||r.calendardate||'';
+      if(!datum)return;
+      const d=datum.split('T')[0].split(' ')[0];
+      const rhr=parseInt(r.restingheartrate||r.restingheartratevalue||r.restinghr||'0');
+      if(rhr>0){hr[d]={rhr,max:parseInt(r.maxhr||r.maxheartrate||'0')};imported++;}
+    });
+    DB.set('garmin_hr',hr);
+    ilog(`✓ ${imported} hartslagdagen geïmporteerd`);
+  }
+
+  else if(type==='hrv'){
+    const hv=DB.get('garmin_hrv')||{};
+    rows.forEach(r=>{
+      const datum=r.date||r.calendardate||'';
+      if(!datum)return;
+      const d=datum.split('T')[0].split(' ')[0];
+      const val=parseInt(r.lastnightavg||r.hrvvalue||r.hrv||r.nachtelijk||'0');
+      if(val>0){hv[d]={nachtelijk:val,status:r.hrvstatus||r.status||''};imported++;}
+    });
+    DB.set('garmin_hrv',hv);
+    ilog(`✓ ${imported} HRV-dagen geïmporteerd`);
+  }
+
+  else if(type==='steps'){
+    const gd=DB.get('garmin_daily')||{};
+    rows.forEach(r=>{
+      const datum=r.date||r.calendardate||'';
+      if(!datum)return;
+      const d=datum.split('T')[0].split(' ')[0];
+      const stappen=parseInt(r.steps||r.totalsteps||'0');
+      if(stappen>0){
+        if(!gd[d])gd[d]={};
+        gd[d].stappen=stappen;
+        imported++;
+      }
+    });
+    DB.set('garmin_daily',gd);
+    ilog(`✓ ${imported} stappendagen geïmporteerd`);
+  }
+
+  else {
+    // Try generic import — look for any useful columns
+    ilog('⚠️ Bestandstype niet herkend. Probeer een activiteiten-, slaap- of hartslagexport.');
+    ilog('Gevonden kolommen: '+headers.slice(0,8).join(', '));
+  }
+
+  if(imported>0){
+    DB.set('garmin_last_import',new Date().toISOString());
+    DB.set('garmin_connected',true);
+    showToast(`${imported} items geïmporteerd ✓`);
+    refreshDash();refreshGez();refreshTrainingen();refreshCoach();
+  }
+  event.target.value='';
 }
 
-async function quickSync(btn) {
-  if (!DB.get('garmin_connected')) {
-    goTo('profiel', document.querySelectorAll('.nav-btn')[4]);
-    showToast('Koppel eerst je Garmin account');
+// ===== AI COACH =====
+async function refreshCoach(){
+  // Insights
+  const sleepData=DB.get('garmin_sleep')||{};
+  const hrData=DB.get('garmin_hr')||{};
+  const hrvData=DB.get('garmin_hrv')||{};
+  const trainingen=DB.get('trainingen')||[];
+
+  const last7=Array.from({length:7},(_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-i);return d.toISOString().split('T')[0];
+  });
+
+  const slaapVals=last7.map(d=>sleepData[d]?.duur||0).filter(v=>v>0);
+  const hrvVals=last7.map(d=>hrvData[d]?.nachtelijk||0).filter(v=>v>0);
+  const rhrVals=last7.map(d=>hrData[d]?.rhr||0).filter(v=>v>0);
+  const weekStart=new Date();weekStart.setDate(weekStart.getDate()-weekStart.getDay()+1);weekStart.setHours(0,0,0,0);
+  const weekT=trainingen.filter(t=>new Date(t.date)>=weekStart);
+
+  const avg=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10:0;
+  const sAvg=avg(slaapVals);
+  const hAvg=avg(hrvVals);
+  const rAvg=avg(rhrVals);
+
+  document.getElementById('ins-slaap-avg').textContent=sAvg?sAvg+'u':'–';
+  document.getElementById('ins-hrv-avg').textContent=hAvg?hAvg+'ms':'–';
+  document.getElementById('ins-rhr-avg').textContent=rAvg?rAvg+' bpm':'–';
+  document.getElementById('ins-t-week').textContent=weekT.length+'x';
+
+  // Trends (compare first half vs second half of last 7 days)
+  const trend=(vals,higher='good')=>{
+    if(vals.length<4)return'';
+    const h1=avg(vals.slice(0,Math.floor(vals.length/2)));
+    const h2=avg(vals.slice(Math.floor(vals.length/2)));
+    const diff=h2-h1;
+    const up=diff>0;
+    const good=(higher==='good'&&up)||(higher==='bad'&&!up);
+    if(Math.abs(diff)<0.5)return'<span style="color:var(--muted)">→ Stabiel</span>';
+    return `<span style="color:${good?'var(--green)':'#FF6B6B'}">${up?'↑':'↓'} ${Math.abs(diff).toFixed(1)}</span>`;
+  };
+  document.getElementById('ins-slaap-tr').innerHTML=trend(slaapVals,'good');
+  document.getElementById('ins-hrv-tr').innerHTML=trend(hrvVals,'good');
+  document.getElementById('ins-rhr-tr').innerHTML=trend(rhrVals,'bad');
+
+  // AI daily analysis
+  await laadCoachAnalyse();
+}
+
+async function laadCoachAnalyse(){
+  const loadEl=document.getElementById('coach-loading');
+  const textEl=document.getElementById('coach-text');
+  loadEl.classList.remove('hidden');
+  textEl.classList.add('hidden');
+
+  const context=buildCoachContext();
+  if(!context.heeftData){
+    loadEl.classList.add('hidden');
+    textEl.classList.remove('hidden');
+    textEl.textContent='Importeer eerst Garmin data via de Coach tab om persoonlijke inzichten te krijgen.';
     return;
   }
-  btn.textContent = '⏳';
-  btn.disabled = true;
-  await syncGarminData();
-  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync`;
-  btn.disabled = false;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:600,
+        messages:[{role:'user',content:`Je bent een persoonlijke sportcoach en gezondheidsadviseur. Analyseer deze data van vandaag en geef een korte, concrete dagelijkse briefing in het Nederlands. Max 4 zinnen. Wees direct en praktisch.
+
+${context.text}
+
+Geef advies over: herstel, trainingsintensiteit vandaag, slaapkwaliteit, en één concrete tip. Spreek de gebruiker aan als "je".`}]
+      })
+    });
+    const data=await res.json();
+    const tekst=data.content?.map(i=>i.text||'').join('')||'Geen analyse beschikbaar';
+    loadEl.classList.add('hidden');
+    textEl.classList.remove('hidden');
+    textEl.textContent=tekst;
+  }catch(e){
+    loadEl.classList.add('hidden');
+    textEl.classList.remove('hidden');
+    textEl.textContent='Coach tijdelijk niet beschikbaar. Controleer je internetverbinding.';
+  }
 }
 
-function disconnectGarmin() {
-  DB.del('garmin_email'); DB.del('garmin_pass'); DB.del('garmin_connected');
-  DB.del('garmin_ticket'); DB.del('garmin_last_sync');
-  refreshProfiel();
-  showToast('Garmin ontkoppeld');
+function buildCoachContext(){
+  const d=today();
+  const sleep=(DB.get('garmin_sleep')||{})[d];
+  const hr=(DB.get('garmin_hr')||{})[d];
+  const hrv=(DB.get('garmin_hrv')||{})[d];
+  const daily=(DB.get('garmin_daily')||{})[d];
+  const weights=DB.get('weights')||[];
+  const meals=(DB.get('meals')||[]).filter(m=>m.date===d);
+  const trainingen=DB.get('trainingen')||[];
+  const lastT=[...trainingen].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+
+  const heeftData=!!(sleep||hr||hrv||daily||weights.length||meals.length);
+
+  const lines=[`Datum: ${d}`];
+  if(sleep)lines.push(`Slaap: ${sleep.duur}u (diep: ${sleep.diepe}min, REM: ${sleep.rem}min, score: ${sleep.score})`);
+  if(hr)lines.push(`Rusthartslag: ${hr.rhr} bpm`);
+  if(hrv)lines.push(`HRV: ${hrv.nachtelijk}ms (status: ${hrv.status})`);
+  if(daily)lines.push(`Stappen: ${daily.stappen}, Stress: ${daily.stress}`);
+  if(weights.length)lines.push(`Gewicht: ${weights[weights.length-1].v}kg`);
+  if(meals.length){
+    const kcal=meals.reduce((s,m)=>s+(m.kcal||0),0);
+    const prot=meals.reduce((s,m)=>s+(m.protein||0),0);
+    lines.push(`Eten vandaag: ${kcal} kcal, ${prot}g eiwit`);
+  }
+  if(lastT)lines.push(`Laatste training: ${lastT.sport} op ${lastT.date.split('T')[0]} (${lastT.duur}min, ${lastT.afstand}km)`);
+
+  // 7-day averages
+  const last7=Array.from({length:7},(_,i)=>{const dt=new Date();dt.setDate(dt.getDate()-i);return dt.toISOString().split('T')[0];});
+  const sleepData=DB.get('garmin_sleep')||{};
+  const hrvData=DB.get('garmin_hrv')||{};
+  const sAvg=last7.map(x=>sleepData[x]?.duur||0).filter(v=>v>0);
+  const hAvg=last7.map(x=>hrvData[x]?.nachtelijk||0).filter(v=>v>0);
+  if(sAvg.length)lines.push(`Gem. slaap (7d): ${(sAvg.reduce((a,b)=>a+b,0)/sAvg.length).toFixed(1)}u`);
+  if(hAvg.length)lines.push(`Gem. HRV (7d): ${Math.round(hAvg.reduce((a,b)=>a+b,0)/hAvg.length)}ms`);
+
+  return{heeftData,text:lines.join('\n')};
+}
+
+async function vraagCoach(){
+  const vraag=document.getElementById('coach-vraag').value.trim();
+  if(!vraag){showToast('Typ eerst een vraag');return;}
+  const antEl=document.getElementById('coach-antwoord');
+  const antText=document.getElementById('coach-antwoord-text');
+  antEl.classList.remove('hidden');
+  antText.textContent='Even denken…';
+
+  const context=buildCoachContext();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:800,
+        messages:[{role:'user',content:`Je bent een persoonlijke sportcoach. Beantwoord deze vraag op basis van de gezondheidsdata. Wees concreet en praktisch. Max 150 woorden. In het Nederlands.
+
+Data:
+${context.text}
+
+Vraag: ${vraag}`}]
+      })
+    });
+    const data=await res.json();
+    antText.textContent=data.content?.map(i=>i.text||'').join('')||'Geen antwoord';
+  }catch(e){
+    antText.textContent='Coach tijdelijk niet beschikbaar.';
+  }
+  antEl.scrollIntoView({behavior:'smooth'});
 }
 
 // ===== DASHBOARD =====
-function refreshDashboard() {
-  const d = new Date();
-  document.getElementById('dash-date').textContent = d.toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
+function refreshDash(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  const li=DB.get('garmin_last_import');
+  const banner=document.getElementById('garmin-banner');
+  if(li){banner.classList.remove('hidden');document.getElementById('last-import').textContent=new Date(li).toLocaleDateString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+  else banner.classList.add('hidden');
 
-  const connected = DB.get('garmin_connected');
-  const banner = document.getElementById('garmin-connected-banner');
-  if (connected) {
-    banner.classList.remove('hidden');
-    const ls = DB.get('garmin_last_sync');
-    document.getElementById('last-sync-time').textContent = ls ? new Date(ls).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'}) : '–';
-  } else {
-    banner.classList.add('hidden');
-  }
+  const weights=DB.get('weights')||[];
+  const lw=weights[weights.length-1];
+  document.getElementById('d-gew').innerHTML=lw?`${lw.v}<span class="cu">kg</span>`:`–<span class="cu">kg</span>`;
 
-  // Weight
-  const weights = DB.get('weights') || [];
-  const lw = weights[weights.length - 1];
-  document.getElementById('dash-weight').innerHTML = lw ? `${lw.v}<span class="card-unit">kg</span>` : `–<span class="card-unit">kg</span>`;
+  const d=today();
+  const rhr=(DB.get('garmin_hr')||{})[d]?.rhr;
+  document.getElementById('d-rhr').innerHTML=rhr?`${rhr}<span class="cu">bpm</span>`:`–<span class="cu">bpm</span>`;
+  const sl=(DB.get('garmin_sleep')||{})[d]?.duur;
+  document.getElementById('d-slaap').innerHTML=sl?`${sl}<span class="cu">u</span>`:`–<span class="cu">u</span>`;
+  const hrv=(DB.get('garmin_hrv')||{})[d]?.nachtelijk;
+  document.getElementById('d-hrv').innerHTML=hrv?`${hrv}<span class="cu">ms</span>`:`–<span class="cu">ms</span>`;
+  const daily=(DB.get('garmin_daily')||{})[d];
+  document.getElementById('d-stap').textContent=daily?.stappen?daily.stappen.toLocaleString('nl-NL'):'–';
+  document.getElementById('d-vo2').textContent=DB.get('garmin_vo2')||'–';
+  document.getElementById('d-str').textContent=daily?.stress||'–';
 
-  // Garmin data
-  const hrData = DB.get('garmin_hr') || {};
-  const rhr = hrData[today()]?.rhr;
-  document.getElementById('dash-rhr').innerHTML = rhr ? `${rhr}<span class="card-unit">bpm</span>` : `–<span class="card-unit">bpm</span>`;
+  const meals=(DB.get('meals')||[]).filter(m=>m.date===d);
+  const tk=meals.reduce((s,m)=>s+(m.kcal||0),0);
+  const tc=meals.reduce((s,m)=>s+(m.carbs||0),0);
+  const tpr=meals.reduce((s,m)=>s+(m.protein||0),0);
+  const tf=meals.reduce((s,m)=>s+(m.fat||0),0);
+  document.getElementById('dash-kcal').innerHTML=`${tk} <span>kcal</span>`;
+  document.getElementById('bc').style.width=Math.min(100,tc/300*100)+'%';
+  document.getElementById('bprot').style.width=Math.min(100,tpr/150*100)+'%';
+  document.getElementById('bf').style.width=Math.min(100,tf/80*100)+'%';
+  document.getElementById('bc-v').textContent=tc+'g';
+  document.getElementById('bp-v').textContent=tpr+'g';
+  document.getElementById('bf-v').textContent=tf+'g';
 
-  const sleepData = DB.get('garmin_sleep') || {};
-  const sleep = sleepData[today()]?.duur;
-  document.getElementById('dash-slaap').innerHTML = sleep ? `${sleep}<span class="card-unit">u</span>` : `–<span class="card-unit">u</span>`;
+  const trainingen=DB.get('trainingen')||[];
+  const lastT=[...trainingen].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const cont=document.getElementById('d-last-t');
+  const colors={'🏃 Hardlopen':'#FF6B6B','🚴 Fietsen':'#4A9EFF','🏋️ Gym':'#B06EFF','⚡ HIIT/Hyrox':'#FFD166'};
+  if(lastT){
+    const c=colors[lastT.sport]||'#F4501E';
+    const hr=lastT.hartslag?` · ❤️${lastT.hartslag}bpm`:'';
+    const src=lastT.import_id?'<span style="color:var(--blue);font-size:11px"> · ⌚ Garmin</span>':'';
+    cont.innerHTML=`<div class="ti"><div class="tic" style="background:${c}22">${lastT.sport.split(' ')[0]}</div><div class="tii"><div class="tin">${lastT.notitie||lastT.sport}</div><div class="tim">${new Date(lastT.date).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} · ${lastT.duur}min${hr}${src}</div></div><div class="tis"><div class="tisv">${lastT.afstand>0?lastT.afstand:lastT.duur}</div><div class="tisu">${lastT.afstand>0?'km':'min'}</div></div></div>`;
+  } else cont.innerHTML='<div class="empty"><div class="ei">🏃</div>Importeer Garmin data via Coach tab</div>';
 
-  const hrvData = DB.get('garmin_hrv') || {};
-  const hrv = hrvData[today()]?.nachtelijk;
-  document.getElementById('dash-hrv').innerHTML = hrv ? `${hrv}<span class="card-unit">ms</span>` : `–<span class="card-unit">ms</span>`;
-
-  const daily = (DB.get('garmin_daily') || {})[today()];
-  document.getElementById('dash-stappen').innerHTML = daily?.stappen ? `${daily.stappen.toLocaleString('nl-NL')}` : `–`;
-  document.getElementById('dash-stress').innerHTML = daily?.stress ? `${daily.stress}` : `–`;
-  document.getElementById('dash-vo2').innerHTML = DB.get('garmin_vo2') ? `${DB.get('garmin_vo2')}` : `–`;
-
-  // Meals
-  const meals = (DB.get('meals') || []).filter(m => m.date === today());
-  const totalKcal = meals.reduce((s,m) => s+(m.kcal||0), 0);
-  const totalCarbs = meals.reduce((s,m) => s+(m.carbs||0), 0);
-  const totalProtein = meals.reduce((s,m) => s+(m.protein||0), 0);
-  const totalFat = meals.reduce((s,m) => s+(m.fat||0), 0);
-  document.getElementById('dash-kcal-val').innerHTML = `${totalKcal} <span>kcal</span>`;
-  document.getElementById('bar-carbs').style.width = Math.min(100, totalCarbs/300*100) + '%';
-  document.getElementById('bar-protein').style.width = Math.min(100, totalProtein/150*100) + '%';
-  document.getElementById('bar-fat').style.width = Math.min(100, totalFat/80*100) + '%';
-  document.getElementById('bar-carbs-val').textContent = totalCarbs + 'g';
-  document.getElementById('bar-protein-val').textContent = totalProtein + 'g';
-  document.getElementById('bar-fat-val').textContent = totalFat + 'g';
-
-  // Last training
-  const trainingen = DB.get('trainingen') || [];
-  const lastT = [...trainingen].sort((a,b) => new Date(b.date)-new Date(a.date))[0];
-  const container = document.getElementById('dash-last-training');
-  const colors = {'🏃 Hardlopen':'#FF6B6B','🚴 Fietsen':'#4A9EFF','🏋️ Gym':'#B06EFF','⚡ HIIT/Hyrox':'#FFD166'};
-  if (lastT) {
-    const color = colors[lastT.sport] || '#F4501E';
-    const hrStr = lastT.hartslag ? ` · ❤️ ${lastT.hartslag} bpm` : '';
-    const kcalStr = lastT.kcalVerbrand ? ` · 🔥 ${lastT.kcalVerbrand} kcal` : '';
-    container.innerHTML = `<div class="training-item">
-      <div class="training-icon" style="background:${color}22">${lastT.sport.split(' ')[0]}</div>
-      <div class="training-info">
-        <div class="training-name">${lastT.notitie || lastT.sport}</div>
-        <div class="training-meta">${new Date(lastT.date).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} · ${lastT.duur}min${hrStr}${kcalStr}</div>
-      </div>
-      <div class="training-stat">
-        <div class="training-stat-val">${lastT.afstand > 0 ? lastT.afstand : lastT.duur}</div>
-        <div class="training-stat-unit">${lastT.afstand > 0 ? 'km' : 'min'}</div>
-      </div>
-    </div>`;
-  } else {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">🏃</div>Koppel Garmin om trainingen te laden</div>';
-  }
-
-  drawWeightChart('weight-chart-dash', weights.slice(-14), 110);
+  drawWeightChart('wc-dash',weights.slice(-14),110);
 }
 
 // ===== MEALS =====
-function openCamera() { document.getElementById('camera-input').click(); }
-
-async function handlePhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const dataUrl = e.target.result;
-    document.getElementById('analyse-img').src = dataUrl;
-    document.getElementById('analyse-loading').style.display = 'flex';
-    document.getElementById('analyse-result').classList.add('hidden');
-    document.getElementById('analyse-overlay').classList.remove('hidden');
+function openCamera(){document.getElementById('cam').click();}
+async function handlePhoto(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const dataUrl=e.target.result;
+    document.getElementById('a-img').src=dataUrl;
+    document.getElementById('a-load').style.display='flex';
+    document.getElementById('a-res').classList.add('hidden');
+    document.getElementById('analyse-ov').classList.remove('hidden');
     await analysePhoto(dataUrl);
   };
-  reader.readAsDataURL(file);
-  event.target.value = '';
+  reader.readAsDataURL(file);event.target.value='';
 }
 
-async function analysePhoto(dataUrl) {
-  const base64 = dataUrl.split(',')[1];
-  const mediaType = dataUrl.split(';')[0].split(':')[1];
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6', max_tokens: 1000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: `Analyseer deze maaltijdfoto en geef een schatting van de voedingswaarden. Reageer ALLEEN met een JSON-object (geen uitleg, geen backticks), in dit formaat:
-{"beschrijving":"korte beschrijving in het Nederlands","kcal":650,"eiwit":35,"koolhydraten":70,"vet":20,"vezels":8,"suiker":12,"zout":1.5}
-Alle waarden zijn getallen. Wees realistisch.` }
-        ]}]
-      })
-    });
-    const data = await res.json();
-    const text = data.content.map(i => i.text || '').join('');
-    currentMealData = JSON.parse(text.replace(/```json|```/g,'').trim());
-  } catch(e) {
-    currentMealData = { beschrijving: 'Analyse mislukt — vul handmatig aan', kcal: 500, eiwit: 25, koolhydraten: 50, vet: 18, vezels: 5, suiker: 8, zout: 1.0 };
-  }
-  showAnalyseResult(currentMealData);
+async function analysePhoto(dataUrl){
+  const b64=dataUrl.split(',')[1];
+  const mt=dataUrl.split(';')[0].split(':')[1];
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:`Analyseer deze maaltijdfoto. Reageer ALLEEN met JSON (geen backticks):
+{"beschrijving":"naam in NL","kcal":650,"eiwit":35,"koolhydraten":70,"vet":20,"vezels":8,"suiker":12,"zout":1.5}`}]}]})});
+    const data=await res.json();
+    curMeal=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+  }catch(e){curMeal={beschrijving:'Analyse mislukt',kcal:500,eiwit:25,koolhydraten:50,vet:18,vezels:5,suiker:8,zout:1.0};}
+  showMealResult(curMeal);
 }
 
-function showAnalyseResult(d) {
-  document.getElementById('analyse-loading').style.display = 'none';
-  document.getElementById('analyse-result').classList.remove('hidden');
-  document.getElementById('ai-beschrijving').textContent = d.beschrijving;
-  document.getElementById('ring-kcal').textContent = d.kcal;
-  const canvas = document.getElementById('macro-ring');
-  const ctx = canvas.getContext('2d');
-  canvas.width = 160; canvas.height = 160;
-  const total = d.koolhydraten*4 + d.eiwit*4 + d.vet*9 || 1;
-  const slices = [{val:d.koolhydraten*4,color:'#4A9EFF'},{val:d.eiwit*4,color:'#3DDC84'},{val:d.vet*9,color:'#FFD166'}];
-  let start = -Math.PI/2;
-  ctx.clearRect(0,0,160,160);
-  slices.forEach(s => {
-    const a = (s.val/total)*Math.PI*2;
-    ctx.beginPath(); ctx.moveTo(80,80); ctx.arc(80,80,74,start,start+a); ctx.closePath();
-    ctx.fillStyle = s.color; ctx.fill(); start += a;
-  });
-  ctx.beginPath(); ctx.arc(80,80,50,0,Math.PI*2); ctx.fillStyle='#181B24'; ctx.fill();
-  const chips = [
-    {name:'Koolhydraten',val:d.koolhydraten+'g',color:'#4A9EFF'},
-    {name:'Eiwit',val:d.eiwit+'g',color:'#3DDC84'},
-    {name:'Vet',val:d.vet+'g',color:'#FFD166'},
-    {name:'Vezels',val:d.vezels+'g',color:'#B06EFF'},
-    {name:'Suiker',val:d.suiker+'g',color:'#FF6B6B'},
-    {name:'Zout',val:d.zout+'g',color:'#6B7080'},
-  ];
-  document.getElementById('macro-grid').innerHTML = chips.map(c =>
-    `<div class="macro-chip"><div class="macro-chip-val"><span class="macro-chip-dot" style="background:${c.color}"></span>${c.val}</div><div class="macro-chip-name">${c.name}</div></div>`
-  ).join('');
+function showMealResult(d){
+  document.getElementById('a-load').style.display='none';
+  document.getElementById('a-res').classList.remove('hidden');
+  document.getElementById('a-desc').textContent=d.beschrijving;
+  document.getElementById('r-kcal').textContent=d.kcal;
+  const canvas=document.getElementById('macro-ring');
+  const ctx=canvas.getContext('2d');
+  canvas.width=160;canvas.height=160;
+  const tot=d.koolhydraten*4+d.eiwit*4+d.vet*9||1;
+  const sl=[{v:d.koolhydraten*4,c:'#4A9EFF'},{v:d.eiwit*4,c:'#3DDC84'},{v:d.vet*9,c:'#FFD166'}];
+  let s=-Math.PI/2;
+  sl.forEach(x=>{const a=(x.v/tot)*Math.PI*2;ctx.beginPath();ctx.moveTo(80,80);ctx.arc(80,80,74,s,s+a);ctx.closePath();ctx.fillStyle=x.c;ctx.fill();s+=a;});
+  ctx.beginPath();ctx.arc(80,80,50,0,Math.PI*2);ctx.fillStyle='#181B24';ctx.fill();
+  const chips=[{n:'Koolhydraten',v:d.koolhydraten+'g',c:'#4A9EFF'},{n:'Eiwit',v:d.eiwit+'g',c:'#3DDC84'},{n:'Vet',v:d.vet+'g',c:'#FFD166'},{n:'Vezels',v:d.vezels+'g',c:'#B06EFF'},{n:'Suiker',v:d.suiker+'g',c:'#FF6B6B'},{n:'Zout',v:d.zout+'g',c:'#6B7080'}];
+  document.getElementById('macro-grid').innerHTML=chips.map(c=>`<div class="mc"><div class="mcv"><span class="mcd" style="background:${c.c}"></span>${c.v}</div><div class="mcn">${c.n}</div></div>`).join('');
 }
 
-function saveMeal() {
-  if (!currentMealData) return;
-  const meals = DB.get('meals') || [];
-  const now = new Date();
-  meals.push({ date: today(), time: now.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),
-    beschrijving: currentMealData.beschrijving, kcal: currentMealData.kcal,
-    protein: currentMealData.eiwit, carbs: currentMealData.koolhydraten, fat: currentMealData.vet,
-    vezels: currentMealData.vezels, suiker: currentMealData.suiker, zout: currentMealData.zout });
-  DB.set('meals', meals);
-  closeOverlay(); refreshMeals(); refreshDashboard();
-  showToast('Maaltijd opgeslagen ✓');
+function saveMeal(){
+  if(!curMeal)return;
+  const meals=DB.get('meals')||[];
+  const now=new Date();
+  meals.push({date:today(),time:now.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),beschrijving:curMeal.beschrijving,kcal:curMeal.kcal,protein:curMeal.eiwit,carbs:curMeal.koolhydraten,fat:curMeal.vet,vezels:curMeal.vezels,suiker:curMeal.suiker,zout:curMeal.zout});
+  DB.set('meals',meals);closeOv();refreshMeals();refreshDash();showToast('Maaltijd opgeslagen ✓');
 }
+function closeOv(){document.getElementById('analyse-ov').classList.add('hidden');curMeal=null;}
 
-function closeOverlay() {
-  document.getElementById('analyse-overlay').classList.add('hidden');
-  currentMealData = null;
-}
-
-function refreshMeals() {
-  document.getElementById('meal-date').textContent = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
-  const meals = (DB.get('meals')||[]).filter(m => m.date === today());
-  const list = document.getElementById('meals-list');
-  if (!meals.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🍽️</div>Nog geen maaltijden gelogd</div>'; return; }
-  list.innerHTML = meals.map(m => `<div class="meal-item">
-    <div class="meal-item-header"><div><div class="meal-name">${m.beschrijving}</div><div class="meal-time">${m.time}</div></div><div class="meal-kcal">${m.kcal} kcal</div></div>
-    <div class="meal-macros">
-      <div class="meal-macro"><div class="meal-macro-val" style="color:#4A9EFF">${m.carbs}g</div><div class="meal-macro-label">Koolh.</div></div>
-      <div class="meal-macro"><div class="meal-macro-val" style="color:#3DDC84">${m.protein}g</div><div class="meal-macro-label">Eiwit</div></div>
-      <div class="meal-macro"><div class="meal-macro-val" style="color:#FFD166">${m.fat}g</div><div class="meal-macro-label">Vet</div></div>
-      <div class="meal-macro"><div class="meal-macro-val" style="color:#B06EFF">${m.vezels}g</div><div class="meal-macro-label">Vezels</div></div>
-    </div>
-  </div>`).join('');
+function refreshMeals(){
+  document.getElementById('meal-date').textContent=new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  const meals=(DB.get('meals')||[]).filter(m=>m.date===today());
+  const list=document.getElementById('meals-list');
+  if(!meals.length){list.innerHTML='<div class="empty"><div class="ei">🍽️</div>Nog geen maaltijden</div>';return;}
+  list.innerHTML=meals.map(m=>`<div class="mi"><div class="mih"><div><div class="mn">${m.beschrijving}</div><div class="mt">${m.time}</div></div><div class="mk">${m.kcal} kcal</div></div><div class="mm"><div class="mmc"><div class="mmv" style="color:#4A9EFF">${m.carbs}g</div><div class="mml">Koolh.</div></div><div class="mmc"><div class="mmv" style="color:#3DDC84">${m.protein}g</div><div class="mml">Eiwit</div></div><div class="mmc"><div class="mmv" style="color:#FFD166">${m.fat}g</div><div class="mml">Vet</div></div><div class="mmc"><div class="mmv" style="color:#B06EFF">${m.vezels}g</div><div class="mml">Vezels</div></div></div></div>`).join('');
 }
 
 // ===== TRAININGEN =====
-function selectSport(btn) {
-  document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active'); selectedSport = btn.dataset.sport;
+function selSport(btn){document.querySelectorAll('.sb[data-sport]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selSportVal=btn.dataset.sport;}
+function logTraining(){
+  const duur=parseInt(document.getElementById('t-dur').value);
+  if(!duur){showToast('Vul een duur in');return;}
+  const trainingen=DB.get('trainingen')||[];
+  trainingen.push({date:new Date().toISOString(),sport:selSportVal,duur,afstand:parseFloat(document.getElementById('t-afs').value)||0,notitie:document.getElementById('t-not').value});
+  DB.set('trainingen',trainingen);
+  document.getElementById('t-dur').value='';document.getElementById('t-afs').value='';document.getElementById('t-not').value='';
+  refreshTrainingen();showToast('Training opgeslagen ✓');
 }
-
-function logTraining() {
-  const duur = parseInt(document.getElementById('t-duur').value);
-  if (!duur) { showToast('Vul een duur in'); return; }
-  const trainingen = DB.get('trainingen') || [];
-  trainingen.push({ date: new Date().toISOString(), sport: selectedSport, duur, afstand: parseFloat(document.getElementById('t-afstand').value)||0, notitie: document.getElementById('t-notitie').value });
-  DB.set('trainingen', trainingen);
-  document.getElementById('t-duur').value=''; document.getElementById('t-afstand').value=''; document.getElementById('t-notitie').value='';
-  refreshTrainingen(); showToast('Training opgeslagen ✓');
-}
-
-function refreshTrainingen() {
-  const trainingen = DB.get('trainingen') || [];
-  const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-weekStart.getDay()+1); weekStart.setHours(0,0,0,0);
-  const weekT = trainingen.filter(t => new Date(t.date) >= weekStart);
-  document.getElementById('t-week-count').innerHTML = `${weekT.length}<span class="card-unit">x</span>`;
-  document.getElementById('t-week-km').innerHTML = `${weekT.reduce((s,t)=>s+(t.afstand||0),0).toFixed(1)}<span class="card-unit">km</span>`;
-  const list = document.getElementById('trainingen-list');
-  const sorted = [...trainingen].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if (!sorted.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🏋️</div>Nog geen trainingen</div>'; return; }
-  const colors = {'🏃 Hardlopen':'#FF6B6B','🚴 Fietsen':'#4A9EFF','🏋️ Gym':'#B06EFF','⚡ HIIT/Hyrox':'#FFD166'};
-  list.innerHTML = sorted.slice(0,30).map(t => {
-    const color = colors[t.sport] || '#F4501E';
-    const hrStr = t.hartslag ? ` · ❤️${t.hartslag}bpm` : '';
-    const src = t.garmin_id ? ' · <span style="color:var(--blue);font-size:11px">⌚ Garmin</span>' : '';
-    return `<div class="training-item">
-      <div class="training-icon" style="background:${color}22">${t.sport.split(' ')[0]}</div>
-      <div class="training-info">
-        <div class="training-name">${t.notitie || t.sport}</div>
-        <div class="training-meta">${new Date(t.date).toLocaleDateString('nl-NL',{day:'numeric',month:'short',weekday:'short'})} · ${t.duur}min${hrStr}${src}</div>
-      </div>
-      <div class="training-stat">
-        <div class="training-stat-val">${t.afstand>0?t.afstand:t.duur}</div>
-        <div class="training-stat-unit">${t.afstand>0?'km':'min'}</div>
-      </div>
-    </div>`;
+function refreshTrainingen(){
+  const trainingen=DB.get('trainingen')||[];
+  const ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);ws.setHours(0,0,0,0);
+  const wt=trainingen.filter(t=>new Date(t.date)>=ws);
+  document.getElementById('t-wk').innerHTML=`${wt.length}<span class="cu">x</span>`;
+  document.getElementById('t-km').innerHTML=`${wt.reduce((s,t)=>s+(t.afstand||0),0).toFixed(1)}<span class="cu">km</span>`;
+  const list=document.getElementById('t-list');
+  const sorted=[...trainingen].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!sorted.length){list.innerHTML='<div class="empty"><div class="ei">🏋️</div>Nog geen trainingen</div>';return;}
+  const colors={'🏃 Hardlopen':'#FF6B6B','🚴 Fietsen':'#4A9EFF','🏋️ Gym':'#B06EFF','⚡ HIIT/Hyrox':'#FFD166'};
+  list.innerHTML=sorted.slice(0,30).map(t=>{
+    const c=colors[t.sport]||'#F4501E';
+    const hr=t.hartslag?` · ❤️${t.hartslag}bpm`:'';
+    const src=t.import_id?'<span style="color:var(--blue);font-size:11px"> ⌚</span>':'';
+    return `<div class="ti"><div class="tic" style="background:${c}22">${t.sport.split(' ')[0]}</div><div class="tii"><div class="tin">${t.notitie||t.sport}${src}</div><div class="tim">${new Date(t.date).toLocaleDateString('nl-NL',{day:'numeric',month:'short',weekday:'short'})} · ${t.duur}min${hr}</div></div><div class="tis"><div class="tisv">${t.afstand>0?t.afstand:t.duur}</div><div class="tisu">${t.afstand>0?'km':'min'}</div></div></div>`;
   }).join('');
 }
 
 // ===== GEZONDHEID =====
-function logWeight() {
-  const val = parseFloat(document.getElementById('weight-input').value);
-  if (!val || val < 30 || val > 300) { showToast('Voer een geldig gewicht in'); return; }
-  const weights = DB.get('weights') || [];
-  weights.push({ date: today(), v: val });
-  DB.set('weights', weights);
-  document.getElementById('weight-input').value = '';
-  refreshGezondheid(); refreshDashboard();
-  showToast(`${val} kg opgeslagen ✓`);
+function logWeight(){
+  const val=parseFloat(document.getElementById('weight-in').value);
+  if(!val||val<30||val>300){showToast('Voer een geldig gewicht in');return;}
+  const weights=DB.get('weights')||[];
+  weights.push({date:today(),v:val});
+  DB.set('weights',weights);
+  document.getElementById('weight-in').value='';
+  refreshGez();refreshDash();showToast(`${val} kg opgeslagen ✓`);
 }
 
-function refreshGezondheid() {
-  const d = today();
-  const sleepData = (DB.get('garmin_sleep') || {})[d];
-  const hrData = (DB.get('garmin_hr') || {})[d];
-  const hrvData = (DB.get('garmin_hrv') || {})[d];
-  const daily = (DB.get('garmin_daily') || {})[d];
-  const vo2 = DB.get('garmin_vo2');
-
-  document.getElementById('g-slaap').innerHTML = sleepData ? `${sleepData.duur}<span class="card-unit">u</span>` : `–<span class="card-unit">u</span>`;
-  document.getElementById('g-rhr').innerHTML = hrData?.rhr ? `${hrData.rhr}<span class="card-unit">bpm</span>` : `–<span class="card-unit">bpm</span>`;
-  document.getElementById('g-hrv').innerHTML = hrvData?.nachtelijk ? `${hrvData.nachtelijk}<span class="card-unit">ms</span>` : `–<span class="card-unit">ms</span>`;
-  document.getElementById('g-vo2').innerHTML = vo2 ? `${vo2}` : `–`;
-  document.getElementById('g-stappen').innerHTML = daily?.stappen ? `${daily.stappen.toLocaleString('nl-NL')}` : `–`;
-  document.getElementById('g-stress').innerHTML = daily?.stress ? `${daily.stress}` : `–`;
-
-  // Sleep phases
-  const spCard = document.getElementById('sleep-phases-card');
-  if (sleepData && sleepData.diepe) {
-    const total = sleepData.diepe + sleepData.lichte + sleepData.rem;
-    spCard.innerHTML = `
-      <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-        <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#4A9EFF">${sleepData.diepe}m</div><div style="font-size:11px;color:var(--muted)">Diep</div></div>
-        <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#B06EFF">${sleepData.rem}m</div><div style="font-size:11px;color:var(--muted)">REM</div></div>
-        <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#6B7080">${sleepData.lichte}m</div><div style="font-size:11px;color:var(--muted)">Licht</div></div>
-        <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#3DDC84">${sleepData.score||'–'}</div><div style="font-size:11px;color:var(--muted)">Score</div></div>
-      </div>
-      <div style="height:8px;border-radius:4px;overflow:hidden;display:flex">
-        <div style="width:${Math.round(sleepData.diepe/total*100)}%;background:#4A9EFF"></div>
-        <div style="width:${Math.round(sleepData.rem/total*100)}%;background:#B06EFF"></div>
-        <div style="width:${Math.round(sleepData.lichte/total*100)}%;background:#6B7080"></div>
-      </div>`;
-  } else {
-    spCard.innerHTML = '<div style="color:var(--muted);font-size:13px">Synchroniseer Garmin om slaapfases te zien</div>';
-  }
-
-  const weights = DB.get('weights') || [];
-  drawWeightChart('weight-chart-main', weights.slice(-30), 130);
-  drawHRVChart();
-  drawSleepChart();
-}
-
-// ===== PROFIEL =====
-function refreshProfiel() {
-  const connected = DB.get('garmin_connected');
-  const email = DB.get('garmin_email');
-  document.getElementById('garmin-connect-btn').style.display = connected ? 'none' : 'block';
-  document.getElementById('garmin-sync-btn').style.display = connected ? 'block' : 'none';
-  document.getElementById('garmin-disconnect-btn').style.display = connected ? 'block' : 'none';
-  if (connected && email) {
-    document.getElementById('garmin-email').value = email;
-    document.getElementById('garmin-password').value = DB.get('garmin_pass') || '';
-  }
+function refreshGez(){
+  const d=today();
+  const sl=(DB.get('garmin_sleep')||{})[d];
+  const hr=(DB.get('garmin_hr')||{})[d];
+  const hrv=(DB.get('garmin_hrv')||{})[d];
+  const daily=(DB.get('garmin_daily')||{})[d];
+  document.getElementById('g-slaap').innerHTML=sl?`${sl.duur}<span class="cu">u</span>`:`–<span class="cu">u</span>`;
+  document.getElementById('g-rhr').innerHTML=hr?.rhr?`${hr.rhr}<span class="cu">bpm</span>`:`–<span class="cu">bpm</span>`;
+  document.getElementById('g-hrv').innerHTML=hrv?.nachtelijk?`${hrv.nachtelijk}<span class="cu">ms</span>`:`–<span class="cu">ms</span>`;
+  document.getElementById('g-vo2').textContent=DB.get('garmin_vo2')||'–';
+  document.getElementById('g-stap').textContent=daily?.stappen?daily.stappen.toLocaleString('nl-NL'):'–';
+  document.getElementById('g-str').textContent=daily?.stress||'–';
+  const sp=document.getElementById('sleep-phases');
+  if(sl&&sl.diepe){
+    const tot=sl.diepe+sl.rem+sl.lichte||1;
+    sp.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#4A9EFF">${sl.diepe}m</div><div style="font-size:11px;color:var(--muted)">Diep</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#B06EFF">${sl.rem}m</div><div style="font-size:11px;color:var(--muted)">REM</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#6B7080">${sl.lichte}m</div><div style="font-size:11px;color:var(--muted)">Licht</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;font-family:monospace;color:#3DDC84">${sl.score||'–'}</div><div style="font-size:11px;color:var(--muted)">Score</div></div>
+    </div>
+    <div style="height:8px;border-radius:4px;overflow:hidden;display:flex">
+      <div style="width:${Math.round(sl.diepe/tot*100)}%;background:#4A9EFF"></div>
+      <div style="width:${Math.round(sl.rem/tot*100)}%;background:#B06EFF"></div>
+      <div style="width:${Math.round(sl.lichte/tot*100)}%;background:#6B7080"></div>
+    </div>`;
+  } else sp.innerHTML='<div style="color:var(--muted);font-size:13px">Importeer slaapdata van Garmin</div>';
+  const weights=DB.get('weights')||[];
+  drawWeightChart('wc-main',weights.slice(-30),130);
+  drawLineChart('hrv-chart',DB.get('garmin_hrv')||{},'nachtelijk','#3DDC84','HRV ms',130);
+  drawLineChart('sleep-chart',DB.get('garmin_sleep')||{},'duur','#4A9EFF','Slaap u',130);
 }
 
 // ===== CHARTS =====
-function drawLine(ctx, data, xp, yp, color, lineWidth=2) {
-  if (data.length < 2) return;
-  ctx.beginPath();
-  data.forEach((v,i) => i===0 ? ctx.moveTo(xp(i),yp(v)) : ctx.lineTo(xp(i),yp(v)));
-  ctx.strokeStyle=color; ctx.lineWidth=lineWidth; ctx.lineJoin='round'; ctx.stroke();
+function drawWeightChart(id,weights,h){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;const w=canvas.offsetWidth;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  if(weights.length<2){ctx.fillStyle='#6B7080';ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText('Log gewicht om grafiek te zien',w/2,h/2);return;}
+  const vals=weights.map(x=>x.v);
+  const mn=Math.min(...vals)-1,mx=Math.max(...vals)+1;
+  const pad={t:10,r:10,b:24,l:38};const gw=w-pad.l-pad.r;const gh=h-pad.t-pad.b;
+  const xp=i=>pad.l+(i/(vals.length-1))*gw;
+  const yp=v=>pad.t+(1-(v-mn)/(mx-mn))*gh;
+  [0,.5,1].forEach(f=>{const y=pad.t+f*gh;ctx.strokeStyle='#252A36';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+gw,y);ctx.stroke();ctx.fillStyle='#6B7080';ctx.font='10px monospace';ctx.textAlign='right';ctx.fillText((mx-f*(mx-mn)).toFixed(1),pad.l-4,y+4);});
+  const g=ctx.createLinearGradient(0,pad.t,0,pad.t+gh);g.addColorStop(0,'rgba(244,80,30,.25)');g.addColorStop(1,'rgba(244,80,30,0)');
+  ctx.beginPath();vals.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));ctx.lineTo(xp(vals.length-1),pad.t+gh);ctx.lineTo(xp(0),pad.t+gh);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();vals.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));ctx.strokeStyle='#F4501E';ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  vals.forEach((v,i)=>{ctx.beginPath();ctx.arc(xp(i),yp(v),3,0,Math.PI*2);ctx.fillStyle='#F4501E';ctx.fill();});
 }
 
-function drawWeightChart(id, weights, h) {
-  const canvas = document.getElementById(id);
-  if (!canvas) return;
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.offsetWidth;
-  canvas.width = w * dpr; canvas.height = h * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  if (weights.length < 2) {
-    ctx.fillStyle='#6B7080'; ctx.font='13px -apple-system'; ctx.textAlign='center';
-    ctx.fillText('Log gewicht om grafiek te zien', w/2, h/2); return;
-  }
-  const vals = weights.map(x=>x.v);
-  const min = Math.min(...vals)-1, max = Math.max(...vals)+1;
-  const pad = {t:10,r:10,b:24,l:38};
-  const gw = w-pad.l-pad.r, gh = h-pad.t-pad.b;
-  const xp = i => pad.l+(i/(vals.length-1))*gw;
-  const yp = v => pad.t+(1-(v-min)/(max-min))*gh;
-  [0,0.5,1].forEach(f => {
-    const y = pad.t+f*gh;
-    ctx.strokeStyle='#252A36'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gw,y); ctx.stroke();
-    ctx.fillStyle='#6B7080'; ctx.font='10px monospace'; ctx.textAlign='right';
-    ctx.fillText((max-f*(max-min)).toFixed(1), pad.l-4, y+4);
-  });
-  const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+gh);
-  grad.addColorStop(0,'rgba(244,80,30,0.25)'); grad.addColorStop(1,'rgba(244,80,30,0)');
-  ctx.beginPath(); vals.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));
-  ctx.lineTo(xp(vals.length-1),pad.t+gh); ctx.lineTo(xp(0),pad.t+gh); ctx.closePath();
-  ctx.fillStyle=grad; ctx.fill();
-  drawLine(ctx, vals, xp, yp, '#F4501E', 2.5);
-  vals.forEach((v,i)=>{ ctx.beginPath(); ctx.arc(xp(i),yp(v),3,0,Math.PI*2); ctx.fillStyle='#F4501E'; ctx.fill(); });
-}
-
-function drawHRVChart() {
-  const canvas = document.getElementById('hrv-chart');
-  if (!canvas) return;
-  const dpr = window.devicePixelRatio||1;
-  const w = canvas.offsetWidth, h = 130;
-  canvas.width=w*dpr; canvas.height=h*dpr;
-  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
-  const hrvRaw = DB.get('garmin_hrv') || {};
-  const entries = Object.entries(hrvRaw).sort((a,b)=>a[0]>b[0]?1:-1).slice(-30);
-  if (entries.length < 2) {
-    ctx.fillStyle='#6B7080'; ctx.font='13px -apple-system'; ctx.textAlign='center';
-    ctx.fillText('Synchroniseer Garmin voor HRV trend', w/2, h/2); return;
-  }
-  const vals = entries.map(e=>e[1].nachtelijk||0);
-  const min = Math.max(0,Math.min(...vals)-5), max = Math.max(...vals)+5;
-  const pad={t:10,r:10,b:24,l:38};
-  const gw=w-pad.l-pad.r, gh=h-pad.t-pad.b;
-  const xp = i => pad.l+(i/(vals.length-1))*gw;
-  const yp = v => pad.t+(1-(v-min)/(max-min))*gh;
-  [0,0.5,1].forEach(f=>{
-    const y=pad.t+f*gh; ctx.strokeStyle='#252A36'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gw,y); ctx.stroke();
-    ctx.fillStyle='#6B7080'; ctx.font='10px monospace'; ctx.textAlign='right';
-    ctx.fillText(Math.round(max-f*(max-min)), pad.l-4, y+4);
-  });
-  drawLine(ctx, vals, xp, yp, '#3DDC84', 2);
-  vals.forEach((v,i)=>{ ctx.beginPath(); ctx.arc(xp(i),yp(v),3,0,Math.PI*2); ctx.fillStyle='#3DDC84'; ctx.fill(); });
-}
-
-function drawSleepChart() {
-  const canvas = document.getElementById('sleep-chart');
-  if (!canvas) return;
-  const dpr = window.devicePixelRatio||1;
-  const w = canvas.offsetWidth, h = 130;
-  canvas.width=w*dpr; canvas.height=h*dpr;
-  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
-  const sleepRaw = DB.get('garmin_sleep') || {};
-  const entries = Object.entries(sleepRaw).sort((a,b)=>a[0]>b[0]?1:-1).slice(-30);
-  if (entries.length < 2) {
-    ctx.fillStyle='#6B7080'; ctx.font='13px -apple-system'; ctx.textAlign='center';
-    ctx.fillText('Synchroniseer Garmin voor slaap trend', w/2, h/2); return;
-  }
-  const vals = entries.map(e=>e[1].duur||0);
-  const min=Math.max(0,Math.min(...vals)-0.5), max=Math.min(12,Math.max(...vals)+0.5);
-  const pad={t:10,r:10,b:24,l:38};
-  const gw=w-pad.l-pad.r, gh=h-pad.t-pad.b;
-  const xp = i => pad.l+(i/(vals.length-1))*gw;
-  const yp = v => pad.t+(1-(v-min)/(max-min))*gh;
-  [0,0.5,1].forEach(f=>{
-    const y=pad.t+f*gh; ctx.strokeStyle='#252A36'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gw,y); ctx.stroke();
-    ctx.fillStyle='#6B7080'; ctx.font='10px monospace'; ctx.textAlign='right';
-    ctx.fillText((max-f*(max-min)).toFixed(1)+'u', pad.l-4, y+4);
-  });
-  drawLine(ctx, vals, xp, yp, '#4A9EFF', 2);
-  vals.forEach((v,i)=>{ ctx.beginPath(); ctx.arc(xp(i),yp(v),3,0,Math.PI*2); ctx.fillStyle='#4A9EFF'; ctx.fill(); });
+function drawLineChart(id,rawData,key,color,label,h){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;const w=canvas.offsetWidth;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const entries=Object.entries(rawData).sort((a,b)=>a[0]>b[0]?1:-1).slice(-30);
+  const vals=entries.map(e=>e[1][key]||0).filter(v=>v>0);
+  if(vals.length<2){ctx.fillStyle='#6B7080';ctx.font='13px -apple-system';ctx.textAlign='center';ctx.fillText('Importeer data voor trend',w/2,h/2);return;}
+  const validEntries=entries.filter(e=>(e[1][key]||0)>0);
+  const allVals=validEntries.map(e=>e[1][key]);
+  const mn=Math.max(0,Math.min(...allVals)-2),mx=Math.max(...allVals)+2;
+  const pad={t:10,r:10,b:24,l:38};const gw=w-pad.l-pad.r;const gh=h-pad.t-pad.b;
+  const xp=i=>pad.l+(i/(allVals.length-1))*gw;
+  const yp=v=>pad.t+(1-(v-mn)/(mx-mn))*gh;
+  [0,.5,1].forEach(f=>{const y=pad.t+f*gh;ctx.strokeStyle='#252A36';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+gw,y);ctx.stroke();ctx.fillStyle='#6B7080';ctx.font='10px monospace';ctx.textAlign='right';ctx.fillText((mx-f*(mx-mn)).toFixed(1),pad.l-4,y+4);});
+  ctx.beginPath();allVals.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
+  allVals.forEach((v,i)=>{ctx.beginPath();ctx.arc(xp(i),yp(v),3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();});
 }
 
 // ===== TOAST =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ===== INIT =====
-refreshDashboard();
-refreshProfiel();
+refreshDash();
 </script>
 </body>
 </html>
